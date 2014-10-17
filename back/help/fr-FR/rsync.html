@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Document aide rsync</title>
+<style type="text/css">
+<!--
+p ,pre {
+    font-size: 1em;
+}
+pre {
+	font-family: "Courier New", Courier, monospace;
+}
+
+#content-box {
+    border-style: none solid solid;
+}
+body, td, th {
+    font-family: Arial,Helvetica,sans-serif;
+}
+body {
+    font-size: 68.8%;
+}
+-->
+</style>
+</head>
+
+<body>
+<h2 class="sss"><strong>rsync  <br />
+</strong></h2>
+<p class="sss">rsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you<br />
+	are welcome to redistribute it under certain conditions.  See the GNU<br />
+General Public Licence for details.</p>
+<p class="sss">rsync is a file transfer program capable of efficient remote update<br />
+via a fast differencing algorithm.<br />
+	<br />
+	
+</p>
+<hr />
+<p class="sss"><strong>Rsync exit codes:</strong>
+</p>
+<pre>
+0      Success
+1      Syntax or usage error
+2      Protocol incompatibility
+3      Errors selecting input/output files, dirs
+4      Requested  action not supported: an attempt was made to manipulate 64-bit files on a platform 
+	     that cannot support them; or an option was specified that is supported by the client and not by the server.
+5      Error starting client-server protocol
+6      Daemon unable to append to log-file
+10     Error in socket I/O
+11     Error in file I/O
+12     Error in rsync protocol data stream
+13     Errors with program diagnostics
+14     Error in IPC code
+20     Received SIGUSR1 or SIGINT
+21     Some error returned by waitpid()
+22     Error allocating core memory buffers
+23     Partial transfer due to error
+24     Partial transfer due to vanished source files
+25     The --max-delete limit stopped deletions
+30     Timeout in data send/receive
+35     Timeout waiting for daemon connection</pre>
+
+<p>Error code 11 can be confusing when rsync is started as a service on a Windows platform. It can mean that the pid file for rsync already exists in the C:\Program Files\cwRsyncServer folder (or ony other directory where rsync is installed) - although no other info will be given in Windows Event Log. It will become more apparent only if rsync is started as a service from the command line. <br />
+	<br />
+<strong>Usage:</strong></p>
+
+<pre>
+Usage: rsync [OPTION]... SRC [SRC]... DEST
+  or   rsync [OPTION]... SRC [SRC]... [USER@]HOST:DEST
+  or   rsync [OPTION]... SRC [SRC]... [USER@]HOST::DEST
+  or   rsync [OPTION]... SRC [SRC]... rsync://[USER@]HOST[:PORT]/DEST
+  or   rsync [OPTION]... [USER@]HOST:SRC [DEST]
+  or   rsync [OPTION]... [USER@]HOST::SRC [DEST]
+  or   rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
+The ':' usages connect via remote shell, while '::' & 'rsync://' usages connect
+to an rsync daemon, and require SRC or DEST to start with a module name.</pre>
+<p><strong>Options</strong>:</p>
+<pre>
+ -v, --verbose               increase verbosity
+ -q, --quiet                 suppress non-error messages
+     --no-motd               suppress daemon-mode MOTD (see manpage caveat)
+ -c, --checksum              skip based on checksum, not mod-time & size
+ -a, --archive               archive mode; equals -rlptgoD (no -H,-A,-X)
+     --no-OPTION             turn off an implied OPTION (e.g. --no-D)
+ -r, --recursive             recurse into directories
+ -R, --relative              use relative path names
+     --no-implied-dirs       don't send implied dirs with --relative
+ -b, --backup                make backups (see --suffix & --backup-dir)
+     --backup-dir=DIR        make backups into hierarchy based in DIR
+     --suffix=SUFFIX         set backup suffix (default ~ w/o --backup-dir)
+ -u, --update                skip files that are newer on the receiver
+     --inplace               update destination files in-place (SEE MAN PAGE)
+     --append                append data onto shorter files
+     --append-verify         like --append, but with old data in file checksum
+ -d, --dirs                  transfer directories without recursing
+ -l, --links                 copy symlinks as symlinks
+ -L, --copy-links            transform symlink into referent file/dir
+     --copy-unsafe-links     only "unsafe" symlinks are transformed
+     --safe-links            ignore symlinks that point outside the source tree
+ -k, --copy-dirlinks         transform symlink to a dir into referent dir
+ -K, --keep-dirlinks         treat symlinked dir on receiver as dir
+ -H, --hard-links            preserve hard links
+ -p, --perms                 preserve permissions
+ -E, --executability         preserve the file's executability
+     --chmod=CHMOD           affect file and/or directory permissions
+ -A, --acls                  preserve ACLs (implies --perms)
+ -o, --owner                 preserve owner (super-user only)
+ -g, --group                 preserve group
+     --devices               preserve device files (super-user only)
+     --specials              preserve special files
+ -D                          same as --devices --specials
+ -t, --times                 preserve modification times
+ -O, --omit-dir-times        omit directories from --times
+     --super                 receiver attempts super-user activities
+ -S, --sparse                handle sparse files efficiently
+ -n, --dry-run               perform a trial run with no changes made
+ -W, --whole-file            copy files whole (without delta-xfer algorithm)
+ -x, --one-file-system       don't cross filesystem boundaries
+ -B, --block-size=SIZE       force a fixed checksum block-size
+ -e, --rsh=COMMAND           specify the remote shell to use
+     --rsync-path=PROGRAM    specify the rsync to run on the remote machine
+     --existing              skip creating new files on receiver
+     --ignore-existing       skip updating files that already exist on receiver
+     --remove-source-files   sender removes synchronized files (non-dirs)
+     --del                   an alias for --delete-during
+     --delete                delete extraneous files from destination dirs
+     --delete-before         receiver deletes before transfer, not during
+     --delete-during         receiver deletes during transfer (default)
+     --delete-delay          find deletions during, delete after
+     --delete-after          receiver deletes after transfer, not during
+     --delete-excluded       also delete excluded files from destination dirs
+     --ignore-errors         delete even if there are I/O errors
+     --force                 force deletion of directories even if not empty
+     --max-delete=NUM        don't delete more than NUM files
+     --max-size=SIZE         don't transfer any file larger than SIZE
+     --min-size=SIZE         don't transfer any file smaller than SIZE
+     --partial               keep partially transferred files
+     --partial-dir=DIR       put a partially transferred file into DIR
+     --delay-updates         put all updated files into place at transfer's end
+ -m, --prune-empty-dirs      prune empty directory chains from the file-list
+     --numeric-ids           don't map uid/gid values by user/group name
+     --timeout=SECONDS       set I/O timeout in seconds
+     --contimeout=SECONDS    set daemon connection timeout in seconds
+ -I, --ignore-times          don't skip files that match in size and mod-time
+     --size-only             skip files that match in size
+     --modify-window=NUM     compare mod-times with reduced accuracy
+ -T, --temp-dir=DIR          create temporary files in directory DIR
+ -y, --fuzzy                 find similar file for basis if no dest file
+     --compare-dest=DIR      also compare destination files relative to DIR
+     --copy-dest=DIR         ... and include copies of unchanged files
+     --link-dest=DIR         hardlink to files in DIR when unchanged
+ -z, --compress              compress file data during the transfer
+     --compress-level=NUM    explicitly set compression level
+     --skip-compress=LIST    skip compressing files with a suffix in LIST
+ -C, --cvs-exclude           auto-ignore files the same way CVS does
+ -f, --filter=RULE           add a file-filtering RULE
+ -F                          same as --filter='dir-merge /.rsync-filter'
+                             repeated: --filter='- .rsync-filter'
+     --exclude=PATTERN       exclude files matching PATTERN
+     --exclude-from=FILE     read exclude patterns from FILE
+     --include=PATTERN       don't exclude files matching PATTERN
+     --include-from=FILE     read include patterns from FILE
+     --files-from=FILE       read list of source-file names from FILE
+ -0, --from0                 all *-from/filter files are delimited by 0s
+ -s, --protect-args          no space-splitting; only wildcard special-chars
+     --address=ADDRESS       bind address for outgoing socket to daemon
+     --port=PORT             specify double-colon alternate port number
+     --sockopts=OPTIONS      specify custom TCP options
+     --blocking-io           use blocking I/O for the remote shell
+     --stats                 give some file-transfer stats
+ -8, --8-bit-output          leave high-bit chars unescaped in output
+ -h, --human-readable        output numbers in a human-readable format
+     --progress              show progress during transfer
+ -P                          same as --partial --progress
+ -i, --itemize-changes       output a change-summary for all updates
+     --out-format=FORMAT     output updates using the specified FORMAT
+     --log-file=FILE         log what we're doing to the specified FILE
+     --log-file-format=FMT   log updates using the specified FMT
+     --password-file=FILE    read daemon-access password from FILE
+     --list-only             list the files instead of copying them
+     --bwlimit=KBPS          limit I/O bandwidth; KBytes per second
+     --write-batch=FILE      write a batched update to FILE
+     --only-write-batch=FILE like --write-batch but w/o updating destination
+     --read-batch=FILE       read a batched update from FILE
+     --protocol=NUM          force an older protocol version to be used
+     --iconv=CONVERT_SPEC    request charset conversion of filenames
+ -4, --ipv4                  prefer IPv4
+ -6, --ipv6                  prefer IPv6
+     --version               print version number
+(-h) --help                  show this help (-h works with no other options)߽ࠁက
+</pre>
+<hr />
+  <p><strong>Mac OS X (Snow Leopard or higher) :</strong></p>
+  <blockquote>
+    <p>	Rsync est installé en standard</p>
+  </blockquote>
+<p><strong>Windows :</strong></p>
+  <p>cwRsync </p>
+  <ul>
+    <li><a href="http://www.rsync.net/resources/howto/windows_rsync.html" target="_blank">http://www.rsync.net/resources/howto/windows_rsync.html</a></li>
+    <li><a href="http://www.rsync.net/resources/binaries/cwRsync_3.1.0_Installer.zip" target="_blank">http://www.rsync.net/resources/binaries/cwRsync_3.1.0_Installer.zip</a></li>
+  </ul>
+  <p>cygwin</p>
+  <ul>
+    <li><a href="http://www.cygwin.com/setup.exe" target="_blank">http://www.cygwin.com/setup.exe</a></li>
+    <li>If you operate machines connected via a Domain   Controller, or a standalone machine with multiple local accounts, login   as 'Administrator' (NT/2k/XP) and install Cygwin for current user only.   This will hide    the shortcuts from the &quot;Users&quot;. You can also set the Scheduler (or AT   job) to run the batch as 'Administrator' so the &quot;Users&quot; cannot    fiddle!</li>
+    <li> You will   need to tell Windows where to find the Cygwin /bin directory, otherwise   apps called from outside Cygwin will fail. Do this by adding <strong>C:\Cygwin\bin;</strong> to the PATH statement.</li>
+    <li><strong>Note:</strong> If the end of the path looks something like this: C:\Somepath don't forget to add <strong>;</strong> before you add    the C:\Cygwin\bin; e.g. C:\Somepath;C:\Cygwin\bin;</li>
+</ul>
+  <p>PATH environnement windows</p>
+  <ul>
+    <li>On <strong>Windows 9.x/ME</strong>, add the path statement to the <strong>AUTOEXEC.BAT</strong> and reboot the machine.</li>
+    <li>On <strong>Windows NT</strong>, open the Control Panel and double click on the <strong><em>System</em></strong> applet. Click on the <strong><em>Environment</em></strong> tab.    Add the path settings to the end and click the <strong>Set</strong> button. Click OK, and close the Control Panel. The path will be dynamically reloaded (no need to reboot).</li>
+    <li>On <strong>Windows 2000/XP</strong>, open the Control Panel and double click on the System applet. Click on the <strong><em>Advanced</em></strong> tab, then click the <strong><em>Environment Variables</em></strong> button. Double click on the PATH statement in the 'System Variable' screen (lower of the two), add the    path on the end, and click OK. Click OK to close the <strong><em>Environment Variables</em></strong> screen, then click OK to close the <strong><em>System Properties</em></strong> dialogue box. The path will be dynamically reloaded (no need to reboot).<br />
+      Control Panel --&gt; System --&gt; Advanced --&gt; Environment Variables --&gt; System Variables --&gt; Edit --&gt; Path    <br />
+    </li>
+  </ul>
+<hr />
+<p><strong>Liens</strong></p>
+<ul>
+  <li><a href="http://rsync.samba.org/" target="_blank">http://rsync.samba.org/</a> (en)</li>
+  <li><a href="http://rsync.samba.org/documentation.html" target="_blank">http://rsync.samba.org/documentation.html</a></li>
+  <li><a href="http://www.commentcamarche.net/faq/7040-rsync-sous-windows" target="_blank">http://www.commentcamarche.net/faq/7040-rsync-sous-windows</a></li>
+  <li><a href="http://everythinglinux.org/rsync/" target="_blank">http://everythinglinux.org/rsync/</a></li>
+  <li><a href="http://cygwin.com/" target="_blank">http://cygwin.com/</a></li>
+  <li><a href="http://www.rsync.net/resources/howto/windows_backup.html" target="_blank">http://www.rsync.net/resources/howto/windows_backup.html</a></li>
+</ul>
+<hr />
+<p><strong>Copyright</strong></p>
+<blockquote>
+  <p>Copyright (C) 1996-2006 by Andrew Tridgell, Wayne Davison, and others.<br />
+    &lt;http://rsync.samba.org/&gt;<br />
+    Capabilities: 64-bit files, socketpairs, hard links, symlinks,<br />
+    batchfiles, inplace, IPv6, ACLs,<br />
+    64-bit system inums, 64-bit internal inums</p>
+</blockquote>
+
+<hr />
+<p><br />
+	<br />
+</p>
+</body>
+</html>

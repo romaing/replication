@@ -1,0 +1,705 @@
+<?php
+/**
+ * @version 2.5
+ * @subpackage Components
+ * @package replication
+ * @copyright Copyright (C) 2007 - 2012 romain gires. All rights reserved.
+ * @author		romain gires
+ * @link		http://composant.gires.net/
+ * @license		License GNU General Public License version 2 or later
+ */
+
+// No direct access to this file
+defined('_JEXEC') or die;
+if(!defined('POINTDS')){ define('POINTDS',".".DS);}
+if(!defined('BACKUPDS')){ define('BACKUPDS','.'.DS.'backups'.DS);}
+
+/**
+ * Replication component helper.
+ */
+abstract class ReplicationHelper
+{
+	/**
+	 * Configure the Linkbar.
+	 */
+	public static function addSubmenu($submenu) 
+	{
+		
+		JSubMenuHelper::addEntry(JText::_('COM_REPLICATION_SUBMENU_REPLICATIONS'), 'index.php?option=com_replication', $submenu == 'Replications');
+		JSubMenuHelper::addEntry(JText::_('COM_REPLICATION_SUBMENU_REPLICATION_SITE'), 'index.php?option=com_replication&view=replication_site', $submenu == 'replication_site');
+		JSubMenuHelper::addEntry(JText::_('COM_REPLICATION_SUBMENU_REPLICATION_BDD'), 'index.php?option=com_replication&view=replication_bdd', $submenu == 'replication_bdd');
+		JSubMenuHelper::addEntry(JText::_('COM_REPLICATION_SUBMENU_EXCLUSIONS'), 'index.php?option=com_replication&view=exclusion', $submenu == 'exclusion');
+		
+		// set some global property
+		$document = JFactory::getDocument();
+		$document->addStyleDeclaration('.icon-48-replication {background-image: url(../media/com_replication/images/replication-48x48.png);}');
+
+		if ($submenu == 'exclusion'){
+			$document->setTitle(JText::_('COM_REPLICATION_SUBMENU_EXCLUSIONS'));
+		}elseif ($submenu == 'replication_bdd'){
+			$document->setTitle(JText::_('COM_REPLICATION_SUBMENU_REPLICATION_BDD'));
+		}elseif ($submenu == 'replication_site'){
+			$document->setTitle(JText::_('COM_REPLICATION_SUBMENU_REPLICATION_SITE'));
+		}
+	}
+	/**
+	 * Get the actions
+	 */
+	public static function getActions($messageId = 0)
+	{
+		$user	= JFactory::getUser();
+		$result	= new JObject;
+
+		if (empty($messageId)) {
+			$assetName = 'com_replication';
+		}else {
+			$assetName = 'com_replication.message.'.(int) $messageId;
+		}
+		$actions = array(
+			'core.admin', 'core.manage', 'core.create', 'core.edit', 'core.delete',
+			'replication.apply_site', 'replication.apply_bdd',
+		);
+		foreach ($actions as $action) {
+			$result->set($action,	$user->authorise($action, $assetName));
+		}
+		return $result;
+	}
+
+	public function createBDD($database, &$db, $options)
+	{
+		$db =& JDatabase::getInstance( $options );
+		$db->_errorNum =0;
+		if ( JError::isError($db) ) {
+			JError::raiseNotice( '', JText::_('COM_REPLICATION_PROBLEME_DE_PASSWORD_LA_PLUPART_DU_TEMP_AVEC_LA_BASE') ." " . $database );
+			JError::raiseWarning( '', $database." ".JText::_('COM_REPLICATION_REPLICATION_ALL_DATABASE_ERROR') . $db->toString() );
+			return false;
+		}				
+		return $db;
+		
+	}
+	public function testBDD( $database, &$db, $options, $mess="" )
+	{
+		$db =& JDatabase::getInstance( $options );
+		$query = "SHOW TABLES";
+		$db->setQuery( $query );
+		if ( !$db->query() ) {
+			JError::raiseNotice( '', JText::_('COM_REPLICATION_VERIFIER_PARAM_CONNECTION')." : \"$database\"" .  JText::_($mess));
+			return false;
+		} 
+		return true;
+	}
+
+	private function getTableFilterDefaut($id_table) {
+		$mainframe = JFactory::getApplication();
+		$dbprefix = $mainframe->getCfg('dbprefix');
+		$table = substr ( $id_table , strlen($dbprefix) );
+		//	1 = 'REPLIQUER'  Defaut
+		//	2 = 'REP RAPATRIER AVANT DE REPLIQUER'
+		//	3 = 'REP NE PAS REPLIQUER'
+		$filtre = array(
+			'session'=>'1',
+			'users'=>'2',
+			'banner_tracks'=>'2',
+			'messages'=>'2',
+			'content_rating'=>'2',
+			'core_log_searches'=>'2',
+			'user_notes'=>'2', 
+		);
+		return  (array_key_exists($table, $filtre)) ? $filtre[$table]: 1;
+	}
+
+	public function getTablelist() 
+	{
+		 // Create a new query object.
+		$db = JFactory::getDBO();
+		$query = $db->getQuery(true);
+		$rows = array();
+		
+		$db->getTableList();
+		$ar_nametable = $db->loadResultArray();
+		// Check for errors.
+		if ($db->getErrorNum()) {
+			echo $db->stderr();
+			return false;
+		}
+
+		//config param composant
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$dbprefix = $config->get( 'prefix_source', 'jom_');  
+		
+		$prefixstrlen = strlen($dbprefix);
+
+        for ($i=0; $i < count($ar_nametable); $i++) {
+			if(substr($ar_nametable[$i],0,$prefixstrlen) == $dbprefix){
+				$val = new stdclass;
+				$val->id_table  = $ar_nametable[$i];
+				$status = ReplicationHelper::getTableFilterDefaut($val->id_table);
+				$val->status    = $status;
+				$rows[$i]=  $val;
+			}
+		}
+		return $this->rows = $rows;
+	}
+	
+	public function dumpMySQL_valid_table_exclu( $database, &$db, $options )
+	{
+		$db =& JDatabase::getInstance( $options );
+		$query = "SELECT COUNT(*) FROM #__replicationexclusion ";
+		$db->setQuery( $query );
+		$count = $db->loadResult();
+		if ($count == 0) {
+			JError::raiseNotice( '', JText::_('COM_REPLICATION_SAUVEGARDER_EXCLUSION')  );
+			$db = JFactory::getDBO();
+			$items = ReplicationHelper::getTableList();
+			foreach($items as $value) {
+				$query = "INSERT #__replicationexclusion ";
+				$query.= " SET status  = ".$db->Quote($value->status);
+				$query.= " , id_table  = ".$db->Quote($value->id_table);            	    
+				$db->setQuery( $query );
+				if ( !$db->query() ) {
+					JError::raiseError(500, $db->getErrorMsg() );
+				} 
+        	}
+		}
+		return true;
+	}		
+	public function dumpMySQL_recup_table($database, &$db, &$ar_nametable_rapatrier )
+	{
+		//RAPATRIER AVANT DE REPLIQUER
+		$query = "SELECT * FROM #__replicationexclusion ";
+		$query.= " WHERE status = 2";
+		$db->setQuery( $query );
+		$ar_nametable_rapatrier = $db->loadResultArray();
+		if ($db->getErrorNum()) {
+			JError::raiseNotice( '', JText::_('COM_REPLICATION_DUMPMYSQL_MSG_ERROR_PREFIX_DE_LA_BASE')." $database ". $db->stderr() );
+			return false;
+		}
+		
+		if (count($ar_nametable_rapatrier)==0) {
+			$filename = "";
+			$numlign = "";
+			//JError::raiseNotice( '', JText::_('COM_REPLICATION_PAS_DE_RECUPERATION_PREVU')  );
+			return false;
+		}
+	}		
+	public function dumpMySQL_recup_desti($database, &$db, &$filename, &$numlign, $mode=3, $prefix_in, $prefix_out, $path=POINTDS,$ar_nametable_rapatrier )
+	{
+			$numlign = 0;
+	   
+			$numlign++;
+			$entete = "-- -----------------------------\n";
+			$entete .= "-- ".JText::_('COM_REPLICATION_DUMPMYSQL_MSG_DUMP_DE_LA_BASE');
+			$entete .= " ".$database." au ".date("d-M-Y H:i:s")."\n";
+			$numlign++;
+			$entete .= "-- -----------------------------\n\n\n";
+				   
+			$datex = date('U');
+			$max_execution_time = ini_get('max_execution_time');
+			$max = $datex + $max_execution_time;
+
+			$inserts = "";
+			foreach ($ar_nametable_rapatrier as $nametable) {
+				
+				ReplicationHelper::modif_time_limit( $max );
+				
+				$inserts .= ReplicationHelper::dump_insert($database,$db,$nametable,$mode, $prefix_in, $prefix_out, $numlign,0);
+			}
+			$filename = ReplicationHelper::sauvegarde_fichier($entete."\n\n".$inserts, $path, $filename);
+			return true;
+		
+	}
+																				//$prefix_source, $prefix_destination
+	public function dumpMySQL_all($database, &$db, &$filename, &$numlign, $mode=3, $prefix_in, $prefix_out, $path=POINTDS , $sens)
+	{
+		$numlign = 0;
+	
+		//NE PAS SAUVEGARDER
+		$query = "SELECT * FROM #__replicationexclusion ";
+		$query.= " WHERE status >= 3";
+		$db->setQuery( $query );
+		$ar_nametable_exclude = $db->loadResultArray();
+
+		$ar_nametable_exclude = is_array($ar_nametable_exclude)? $ar_nametable_exclude : array();
+
+
+		if ($db->getErrorNum()==1146) {
+			//JError::raiseNotice( '', JText::_("TABLE 'REPLICATION_EXCLUDE' DOESN'T EXIST MAIS C'EST NORMAL SI C'EST LA PREMIERE FOIS") );
+			//return false;
+		}elseif ($db->getErrorNum()) {
+			echo $db->stderr();
+			return false;
+		}
+
+		$numlign++;
+		$entete = "-- -----------------------------\n";
+		$entete .= "-- ".JText::_('COM_REPLICATION_DUMPMYSQL_MSG_DUMP_DE_LA_BASE');
+		$entete .= " ".$database." au ".date("d-M-Y H:i:s")."\n";
+		$numlign++;
+		$entete .= "-- -----------------------------\n\n\n";
+		
+		$db->getTableList(); //SHOW TABLES
+		$ar_nametable = $db->loadResultArray();
+		if ($db->getErrorNum()) {
+			echo $db->stderr();
+			return false;
+		}
+		
+		$datex = date('U');
+		$max_execution_time = ini_get('max_execution_time');
+		$max = $datex + $max_execution_time;
+		
+		$inserts = "";
+		foreach ($ar_nametable as $nametable) {
+			$table = substr ( $nametable , strlen($prefix_in));
+			$prefix = substr ( $nametable , 0, strlen($prefix_in));
+
+			if ($prefix == $prefix_in){
+				ReplicationHelper::modif_time_limit( $max );
+
+				if (!in_array ($nametable, $ar_nametable_exclude)) {
+				  $inserts .= ReplicationHelper::dump_insert($database,$db,$nametable,$mode, $prefix_in, $prefix_out , $numlign, $sens);
+				}
+			}
+		}
+	
+		$filename = ReplicationHelper::sauvegarde_fichier($entete."\n\n".$inserts, $path, $filename);
+		return true;
+		
+	}
+		
+	### DROP TABLE
+	public function loadMySQL_all($database, &$db, $filename, &$numlign ){
+		$numlign= -1;
+	
+		$handle = gzopen ($filename, "r");
+		$contents = gzread ($handle,filesize($filename)*15); //15 pour la compression w9, mettre + si besion
+		gzclose ($handle);
+		
+		### on force la table en UTF-8 avant importer
+		### SHOW VARIABLES LIKE 'character_set_system';
+	
+		$query = "ALTER DATABASE `".$database."` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"."\n";
+		//mysql_query($query);
+		$db->setQuery( "$query" );
+		if ( !$db->query() ) {
+			//JError::raiseWarning('', JText::_( 'COM_REPLICATION_DUMPMYSQL_MSG_DATABASE_ERROR' ).$db->getErrorMsg() );
+		}
+		$insertions = "-- -----------------------------\n";
+		$ar_contents = explode($insertions, $contents);
+			
+		$datex = date('U');
+		$max_execution_time = ini_get('max_execution_time');
+		$max = $datex + $max_execution_time;
+
+		foreach ($ar_contents as $query) {
+
+			ReplicationHelper::modif_time_limit( $max , 15 );
+			$numlign ++;
+			$query = trim($query);
+			if (!empty($query)){
+				$db->setQuery( "$query" );
+				if ( !$db->query() ) {
+					//echo "<hr>"." numlign = $numlign query = '$query'";
+					JError::raiseWarning('', JText::_( 'COM_REPLICATION_DUMPMYSQL_MSG_DATABASE_ERROR' ).$db->getErrorMsg() );
+					return false;
+				} 
+			}
+		}
+		return true;
+	}
+	private function dump_insert($database, &$db , $nametable, $mode, $prefix_in, $prefix_out  ,&$numlign, $sens)
+	{
+		$creations  = "";
+		$insertions = "";
+		$table = substr(strstr($nametable, '_'), 1);    
+		$table_in = $prefix_in.$table;
+		$table_out = $prefix_out.$table;
+		
+		$query = "SELECT * FROM ".$table_in;
+		$db->setQuery( "$query" );
+		if ( !$db->query() ) {
+			if ( $sens == 0 ) { 
+				### message si la base de destination est vide
+				//JError::raiseNotice('', JText::_( 'COM_REPLICATION_TABLE_NON_CREER_POUR_INSTANT' )." ".$db->getErrorMsg() ); 
+				JError::raiseNotice('', JText::_( 'COM_REPLICATION_TABLE_NON_CREER_POUR_INSTANT' )); 
+			}else{
+				JError::raiseNotice('', JText::_( 'COM_REPLICATION_LA_TABLE_NON_TROUVER' )." ".$db->getErrorMsg() ); 
+			}
+			return ;
+		}
+		
+		### si l'utilisateur a demandé la structure ou la totale
+		if($mode == 1 || $mode == 3){
+			$numlign++;
+			$creations .= "-- -----------------------------\n";
+			$creations .= "-- ".JText::_('COM_REPLICATION_DUMPMYSQL_MSG_CREATION_DE_LA_TABLE')." ".$table_out."\n";
+			
+			//SHOW CREATE table
+			$ar_creationTable = $db->getTableCreate( $table_in );
+			if (!is_array($ar_creationTable)){
+				return ;    
+			}
+		
+			$creationTable = str_replace($table_in, $table_out,$ar_creationTable[$table_in] );
+			$creations .= "DROP TABLE IF EXISTS `".$table_out."` ;\n\n";
+			$numlign++;
+			$creations .= "-- -----------------------------\n";
+			$creations .= $creationTable.";;\n\n";
+		}
+
+		### si l'utilisateur a demandé les données ou la totale
+		if($mode > 1)
+		{
+			$query = "SELECT * FROM ".$table_in;
+			$db->setQuery( "$query" );
+	
+			//$ar_donnees = $db->loadAssocList();
+			$ar_donnees = $db->loadRowList();
+		   
+			$numlign++;
+			$insertions .= "-- -----------------------------\n";
+			$insertions .= "-- ".JText::_('COM_REPLICATION_DUMPMYSQL_MSG_INSERSIONS_DANS_LA_TABLE')." ".$table_out."\n";
+			foreach ($ar_donnees as $nuplet) {
+				$numlign++;
+				$insertions .= "-- -----------------------------\n";
+				$insertions .= "INSERT INTO ".$table_out." VALUES(";
+				//for($i=0; $i < count($nuplet); $i++){
+				$i=0;
+				foreach ($nuplet as $val) {
+					if($i != 0){
+						$insertions .=  ", ";
+					}
+					$insertions .=  "'".addslashes($val)."'";
+					$i++;
+				}
+				$insertions .=  ");\n";
+			}
+			$insertions .= "\n";
+		}
+		return $creations.$insertions;
+	}
+	public function vieuxfichier($chemin , $nombrearchive = 5, $name_ereg = "^dump"){
+		$num = 0;
+		$list = "";
+		$url=JURI::root().'administrator'.substr(str_replace('\\', '/', $chemin),1);
+
+		if (is_dir($chemin)) {
+			$dh = opendir($chemin);
+			$listeentry=array();
+			while (false !== ($entry =readdir($dh)) ) {
+				if(ereg($name_ereg, $entry)){
+					$num++ ;
+					$listeentry[] = $entry;
+				}
+			}
+			sort($listeentry);
+			while ($num > $nombrearchive)  {
+				$num--;
+				$entry = array_shift($listeentry);
+				unlink($chemin.$entry);
+				$list .=  JText::_('COM_REPLICATION_DUMPMYSQL_MSG_SUPPRIMER_SQL')." $entry<br>";
+			}
+			### affiche les fichiers si je suis admin
+			foreach ($listeentry as $key => $entry) {
+				$list .= "<a href='$url$entry'  target=_blank>".JText::_('COM_REPLICATION_DUMPMYSQL_MSG_ARCHIVE_SQL')." $entry</a><br>\n ";
+			}
+		}
+		return $list;
+	}
+	public function read_replic( $path=POINTDS, $name){
+		
+		//si dossier backups n'existe pas, on le creer
+		ReplicationHelper::creer_dossier( $path);
+		
+		if(is_file($path.$name)) {
+			$fp = fopen($path.$name, 'r');
+			$nbvisites = fread($fp, 100);
+			fclose($fp);
+			if ($nbvisites=="") $nbvisites = 0;
+			return $nbvisites;
+		}
+		return false;
+	}
+	public function write_replic( $path=POINTDS, $name){
+		$fp = fopen($path.$name,"c+");
+		$nbvisites = fread($fp, 100);
+		if ($nbvisites=="") $nbvisites = 0;
+		$nbvisites++;
+		fseek($fp,0);
+		fputs($fp,$nbvisites);
+		fclose($fp);
+	}
+	public function write_config_dest(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+
+		$data['host'] 		= $config->get( 'host_destination', '');      
+		$data['user'] 		= $config->get( 'login_destination', '');     
+		$data['password']   = $config->get( 'pass_destination', '');      
+		$data['database']   = $config->get( 'base_destination', '');      
+		$data['dbprefix']    = $config->get( 'prefix_destination', '');
+		
+		$url_destination     = $config->get( 'url_destination', 'site2'); 
+		$data['log_path']     = $url_destination.DS.'logs'; 
+		$data['tmp_path']     = $url_destination.DS.'tmp'; 
+		
+		// Get the previous configuration.
+		$prev = new JConfig();
+		$prev = JArrayHelper::fromObject($prev);
+		
+		// Merge the new data in. We do this to preserve values that were not in the form.
+		$data = array_merge($prev, $data);
+		
+		// Create the new configuration object.
+		$config = new JRegistry('config');
+		$config->loadArray($data);
+		
+		/*
+		 * Write the configuration file.
+		 */
+		jimport('joomla.filesystem.path');
+		jimport('joomla.filesystem.file');
+		
+		// Set the configuration file path.
+		$file = realpath($url_destination).DS.'configuration.php';
+		
+		// Overwrite the old FTP credentials with the new ones.
+		$temp = JFactory::getConfig();
+		$temp->set('host', 		$data['host']);
+		$temp->set('user', 		$data['user']);
+		$temp->set('password', 	$data['password']);
+		$temp->set('database', 	$data['database']);
+		$temp->set('dbprefix', 	$data['dbprefix']);
+		$temp->set('log_path', 	$data['log_path']);
+		$temp->set('tmp_path', 	$data['tmp_path']);
+		
+		$temp->set('offline', 1);
+ 
+		// Get the new FTP credentials.
+		$ftp = JClientHelper::getCredentials('ftp', true);
+
+		// Attempt to make the file writeable if using FTP.
+		if (is_file($file) && !$ftp['enabled'] && JPath::isOwner($file) && !JPath::setPermissions($file, '0644')) {
+				JError::raiseNotice('SOME_ERROR_CODE', JText::_('COM_REPLICATION_ERROR_CONFIGURATION_PHP_NOTWRITABLE'));
+		}
+		
+		// Attempt to write the configuration file as a PHP class named JConfig.
+		$configString = $config->toString('PHP', array('class' => 'JConfig', 'closingtag' => false));
+		if (!JFile::write($file, $configString)) {
+				$this->setError(JText::_('COM_CONFIG_ERROR_WRITE_FAILED'));
+				return false;
+		}
+		
+		// Attempt to make the file unwriteable if using FTP.
+		if ($data['ftp_enable'] == 0 && !$ftp['enabled'] && JPath::isOwner($file) && !JPath::setPermissions($file, '0444')) {
+				JError::raiseNotice('SOME_ERROR_CODE', JText::_('COM_REPLICATION_ERROR_CONFIGURATION_PHP_NOTWRITABLE'));
+		}		
+		return true;
+	}
+	public function write_exclude(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$rs_exclusion = $config->get( 'rs_exclusion', 'exclusion.txt');  
+		$Component_admin_path 	= JPATH_COMPONENT_ADMINISTRATOR.DS;
+		$exclusion = $config->get( 'exclusion', 'configuration.php');
+		$ar_exclusion = array_map('trim',explode ( ';', $exclusion ));
+		$exclusiontxt = implode("\n", $ar_exclusion);		
+		$exclusion = $config->set( 'exclusion', $exclusiontxt);
+
+
+		if($fp = fopen($Component_admin_path.$rs_exclusion,"w+") ){
+			fputs($fp,$exclusiontxt);
+			fclose($fp);
+			return true;
+		}
+		return false;
+	}
+	/*public function write_include(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$rs_inclusion = $config->get( 'rs_inclusion', 'inclusion.txt');  
+		$Component_admin_path 	= JPATH_COMPONENT_ADMINISTRATOR.DS;
+		$inclusion = $config->get( 'inclusion', 'configuration.php');
+		$ar_inclusion = array_map('trim',explode ( ';', $inclusion ));
+		$inclusiontxt = implode("\n", $ar_inclusion);		
+
+
+		if($fp = fopen($Component_admin_path.$rs_inclusion,"w+") ){
+			fputs($fp,$inclusiontxt);
+			fclose($fp);
+			return true;
+		}
+		return false;
+	}*/
+
+	public function clearlog(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$rs_logfile = $config->get( 'rs_logfile', BACKUPDS.'rsync-log.txt');  
+		$Component_admin_path 	= JPATH_ADMINISTRATOR.DS;
+
+		if($fp = fopen($Component_admin_path.$rs_logfile,"w+") ){
+			fputs($fp,"");
+			fclose($fp);
+			return true;
+		}
+		return false;
+	}
+		
+ 	public function creer_dossier_backups(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
+		ReplicationHelper::creer_dossier( $pathbackups );
+	}
+ 	public function creer_dossier_destination(){
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$pathdestination = $config->get( 'url_destination', '');
+		ReplicationHelper::creer_dossier( $pathdestination.DS );
+	}
+ 	private function creer_dossier( $path){
+
+		if(!is_dir($path)) {
+			//creer le dossoer backups
+			mkdir($path, 0755, true);
+			
+			//ecrit fichier index.html
+			$fp = fopen($path."index.html", 'w');
+			fclose($fp);
+			return true;
+		}
+		return false;
+		
+	}
+	private function sauvegarde_fichier( $insertions, $path=POINTDS, $name){
+		
+		$datex = date('U');
+		$max_execution_time = ini_get('max_execution_time');
+		$max = $datex + $max_execution_time;
+
+		ReplicationHelper::modif_time_limit( $max );
+
+		ReplicationHelper::creer_dossier( $path);
+		
+		### sauvegarde du fichier
+		$datef = date("ymd_His");
+		$filename = $path.$name.$datef.".sql.gz";
+		$fichierDumpgz = gzopen("$filename",'w9');
+		gzwrite($fichierDumpgz, $insertions);
+		gzclose($fichierDumpgz);
+		return $filename;
+	}
+	public function mettre_offline($path=JPATH_CONFIGURATION, $offline=0)	{
+		$data['offline']	= 	$offline;
+		
+		// Get the previous configuration.
+		$prev = new JConfig();
+		$prev = JArrayHelper::fromObject($prev);
+		
+		// Merge the new data in. We do this to preserve values that were not in the form.
+		$data = array_merge($prev, $data);
+		// Create the new configuration object.
+		$config = new JRegistry('config');
+		$config->loadArray($data);
+		
+		/*
+		 * Write the configuration file.
+		 */
+		jimport('joomla.filesystem.path');
+		jimport('joomla.filesystem.file');
+		
+		// Set the configuration file path.
+		if(!empty($path) ){
+			$file = realpath($path).DS.'configuration.php';
+		}else{
+			$file = JPATH_CONFIGURATION.DS.'configuration.php';
+		}
+		
+		// Overwrite the old FTP credentials with the new ones.
+		$temp = JFactory::getConfig();
+		$temp->set('offline', $data['offline']);
+		
+		// Get the new FTP credentials.
+		$ftp = JClientHelper::getCredentials('ftp', true);
+		
+		// Attempt to make the file writeable if using FTP.
+		if (!$ftp['enabled'] && JPath::isOwner($file) && !JPath::setPermissions($file, '0644')) {
+				JError::raiseNotice('SOME_ERROR_CODE', JText::_('COM_CONFIG_ERROR_CONFIGURATION_PHP_NOTWRITABLE'));
+		}
+		
+		// Attempt to write the configuration file as a PHP class named JConfig.
+		$configString = $config->toString('PHP', array('class' => 'JConfig', 'closingtag' => false));
+		if (!JFile::write($file, $configString)) {
+				$this->setError(JText::_('COM_CONFIG_ERROR_WRITE_FAILED'));
+				return false;
+		}
+		
+		// Attempt to make the file unwriteable if using FTP.
+		if ($data['ftp_enable'] == 0 && !$ftp['enabled'] && JPath::isOwner($file) && !JPath::setPermissions($file, '0444')) {
+				JError::raiseNotice('SOME_ERROR_CODE', JText::_('COM_CONFIG_ERROR_CONFIGURATION_PHP_NOTUNWRITABLE'));
+		}
+		
+		return true;
+	}
+	/**
+	 * $datex = date('U');
+	 * $max_execution_time = ini_get('max_execution_time');
+	 * $max = $datex + $max_execution_time;
+	 * modif_time_limit( $max );
+	 */
+	public function modif_time_limit( & $max , $plus = 10){
+		$safe_mode = ini_get('safe_mode');
+		if( !$safe_mode AND  ( $max == (date('U')+$plus) ) ){
+				$max = $max+$plus;
+				set_time_limit($max);
+		}
+	} 	
+	/**
+	 * replicationViewreplication_site::cygdrive_path
+	 * transforme les Path windows d:\wwwroot\joomla\
+	 * en path /cygdrive/d/wwwroot/joomla/
+	 */
+	public function cygdrive_path(& $path) {
+		//si le 2eme caratere est :, je considere que l'on est sur window
+		if (substr($path,1,2) == ':'.DS ){
+			// on passe tous les antislash en slash 
+			$path = str_replace(DS, "/", $path);
+			// recupere la lettre 
+			$lettre = substr($path,0,1);
+			// recupere le path sans la lettre et les :/
+			$path = substr($path,3);
+			// on rajoute /cygdrive/
+			$path = "/cygdrive/$lettre/$path";
+			// on rajoute des doublequotes
+			$path = '"'.$path.'"';
+		}
+	}
+	public function recherche_fichierrsync() {
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
+
+		### affiche les fichiers si je suis admin
+		$archive="";
+		$canDo = ReplicationHelper::getActions();
+		if ($canDo->get('core.admin')) {
+			//retourne la liste des anciennes sauvegardes
+			$archive .=  "<b>".JText::_('COM_REPLICATION_DERNIERE_MISE_A_JOUR_SITE')."</b><br>";
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^rsync");
+		}
+		return $archive;
+	}
+	public function recherche_dumps() {
+		$config = &JComponentHelper::getParams( 'com_replication' );
+		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
+
+		### affiche les fichiers si je suis admin
+		$archive="";
+		$canDo = ReplicationHelper::getActions();
+		if ($canDo->get('core.admin')) {
+			//retourne la liste des anciennes sauvegardes
+			$archive .=  "<b>".JText::_('COM_REPLICATION_DERNIERE_MISE_A_JOUR')."</b><br>";
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^source");
+			$archive .=   "<hr><b>".JText::_('COM_REPLICATION_TABLE_RECUPERER_POUR_MISE_A_JOUR_DE_LA_SOURCE')."</b><br>";
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^recup");
+			$archive .=   "<hr><b>".JText::_('COM_REPLICATION_BACKUP_AVANT_MISE_A_JOUR_DE_LA_BASE_DESTINATION')."</b><br>";
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^desti");
+		}
+		return $archive;
+	}
+
+}

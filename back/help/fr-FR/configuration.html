@@ -1,0 +1,92 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Document aide rsync</title>
+<style type="text/css">
+<!--
+p ,pre {
+    font-size: 1em;
+}
+pre {
+	font-family: "Courier New", Courier, monospace;
+}
+#content-box {
+    border-style: none solid solid;
+}
+body, td, th {
+    font-family: Arial,Helvetica,sans-serif;
+}
+body {
+    font-size: 68.8%;
+}
+-->
+</style>
+</head>
+
+<body><p><b>Installation et configuration</b></p>
+<p>La configuration est trés simple et ne prend que queque minute, mais elle doit etre faite avec précision et minucie :</p>
+<p><strong>Coté &quot;Fichier&quot; </strong></p>
+<ol>
+	<li>Dans votre site web joomla actuelle ou une nouvelle installation Joomla, <strong>installer le composant</strong> sur le site web source  (votre sitre de pre-production visible par les gestionnaire du site web)</li>
+	<li>Creer un<strong> dossier vide pour le site web de destination </strong>(votre futur site web d'explotation visible par votre public). Pour info,  j'utilise, pour ces deux dossiers, le nom de &quot;ppdt&quot; pour la preproduction et  &quot;www&quot; pour le site web d'explotation</li>
+	<li>Vous devez creer un<strong> sous-domaine &quot;ppdt.monsite.com&quot;</strong> qui pointe sur le dossier &quot;ppdt&quot; que vous pouvez proteger avec un htacess et htpasswd (recherche dans google "Protéger un dossier avec un .htaccess"). <br />
+		le site web d'exploitation &quot;<strong>www.monsite.com</strong>&quot; pointant deja vers le dossier &quot;www&quot; de votre hebergement.</li>
+	<li>Ensuite, vous configurez un dossier source et de destination dans les paramètres du composant (site web &quot;source&quot;, site web «destination»)</li>
+	<li>Dans les paramètres, Vous pouvez definir des <strong>exceptions de replication de fichier</strong>
+		<ul>
+			<li>le fichier configuration.php ne doit pas etre repliquer puisqu'il contient tout les paramètres du site web (connection base de donnée, dossier templaire, param FTP, etc...) et chaque site web a le sien</li>
+			<li>les dossiers &quot;cache&quot; ne sont pas a repliquer pour la meme raison.</li>
+			<li>Vous aurez peut-etre en fonction de votre site web et de ces fonctionnalites, besion d'exclure tel ou tel dossier car vos utilisateur sur le site web d'exploitation modifie des fichiers (envoi de video, d'image, etc). si c'est pas de cas, par defaut j'ai exclu </li>
+		</ul>
+		<ol>
+			<ul>
+				<li>configuration.php;</li>
+				<li> administrator/cache/;</li>
+				<li>cache/;</li>
+				<li>tmp/;</li>
+			</ul>
+		</ol>
+	</li>
+</ol>
+<p><strong>Coté &quot;Base de données&quot; </strong></p>
+<ol>
+	<li>Pour que le composant  replique la base de donnée &quot;source&quot; vers la base de donnée de &quot;destination&quot;, selon un plan d'action pour chaque table.</li>
+	<li>Vous devez <strong>creer un base de donnée vide</strong> sur le serveur SQL (base de donnée pour votre futur du site web de destination) et  indiquer dans les paramètres du composant dans l'onglet &quot;BDD Destination (esclave)&quot;, les données de connection (Base de donnée, Hôte, Identifiant, Mot de passe, préfix)</li>
+	<li>Indiquer aussi les <strong>paramètres de connection de votre base de donnée</strong>, donc le Nom de la Base de donnée, Hôte (localhost ou nom du serveur SQL), Identifiant (root) et le Mot de passe (du serveur SQL), et le prefix des tables (ex odlug_) dans l'onglet &quot;BDD Source (master)&quot;</li>
+	<li>Ensuite, vous devez configurer les <strong>exceptions de replication de base de donnée</strong> sur la page &quot;Exclusions/Récuperation de table&quot;. il y a 4 possibilites d'action pour chaque table :
+		<ol>
+			<li>"Répliquer"
+				<ol>
+					<li>cette action est la plus standard, </li>
+					<li>c'est une replication unidirectionnel du site web <strong>source</strong> vers le site web <strong>destination</strong></li>
+				</ol>
+			</li>
+			<li>"Rapatrier avant de répliquer"
+				<ol>
+					<li>cette action va recuperer les donnée de la table du site web d'explotation pour l'importer dans le site web &quot;source&quot; AVANT de les exporter,</li>
+					<li> c'est une replication bidirectionnel du site web  de <strong>destination</strong> vers le site web <strong>source</strong> puis vers le site web <strong>destination</strong></li>
+					<li><strong>Attention</strong> : ce type de recuperation va ecrasser les données des tables source et donc les modifications du site web source</li>
+					<li>L'utilisation la plus frequente de cette action est pour des tables de contenu comme celle des commentaire, compte user, forum qui modifier sur le site web d'exploitation</li>
+				</ol>
+			</li>
+			<li>"Ne pas répliquer"
+				<ol>
+					<li>Cette action exclu de la replication un table comme par exemple la table &quot;session&quot;</li>
+				</ol>
+			</li>
+			<li>"Ne pas sauvegarder"
+				<ol>
+					<li>Ne pas sauvegarder dans la sauvegarde (beta)</li>
+				</ol>
+			</li>
+		</ol>
+	</li>
+	<li>Ensuite vous <strong>sauvegardez les paramètres</strong></li>
+	<li>La <strong>configuration est fini </strong>et vous pouvez repliquer. alors revérifier 2 fois.<br />
+		<strong>Sauvegarder avant de repliquer, votre base de donnée et vos fichiers</strong><br />
+	</li>
+</ol>
+</body>
+</html>

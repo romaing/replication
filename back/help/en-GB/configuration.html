@@ -1,0 +1,92 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Document aide rsync</title>
+<style type="text/css">
+<!--
+p ,pre {
+    font-size: 1em;
+}
+pre {
+	font-family: "Courier New", Courier, monospace;
+}
+#content-box {
+    border-style: none solid solid;
+}
+body, td, th {
+    font-family: Arial,Helvetica,sans-serif;
+}
+body {
+    font-size: 68.8%;
+}
+-->
+</style>
+</head>
+
+<body><p><b>Installation and Configuration</b></p>
+<p>Configuration is very simple and only takes a minute queque, but it must be done exactly and minucie:</p>
+<p><strong>Side "File"</strong></p>
+<ol>
+	<li>In your joomla website today or a new Joomla installation, install the component on the source website (SITRE of your pre-production visible to web site administrator)    </li>
+	<li>Create an <strong>empty folder to the destination website</strong> (your future website visible to your audience explotation). FYI, I use for these two cases, the name "PPDT" for preproduction and "www" for the website of explotation</li>
+	<li> You must create a <strong>subdomain "ppdt.monsiteweb.com"</strong> that points to the folder "PPDT" that you can protect with htaccess and htpasswd (search in google "Protect a folder with a. Htaccess").<br />
+		operating the website "<strong>www.monsiteweb.com</strong>" already pointing to the folder "www" to your lodging.		</li>
+	<li>Then you configure a source folder and destination within the parameters of the component (website "source" website "Destination")		</li>
+	<li> In the parameters, you can define <strong>exceptions of replication file</strong>.
+		<ul>
+			<li>The configuration.php file should not be replicating as it contains all of the paramettre website (database connection, file templaire, param FTP, etc ...) and each has its own website.</li>
+			<li> Files "cache" is not a replicate for the same reason.</li>
+			<li> You may be based on your website and these functionalities, besion to exclude a particular file as your user on the website operating modifies files (sending video, image, etc.). if this is not the case, by default.
+				I excluded
+				<ul>
+					<li>configuration.php;</li>
+					<li> administrator/cache/;</li>
+					<li>cache/;</li>
+					<li>tmp/;</li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+</ol>
+<p><strong>Side &quot;Database&quot; </strong></p>
+<ol>
+	<li>For the component to the replica database "source" database to the "destination", according to a plan of action for each table.</li>
+	<li>You must create an empty database on the SQL server (database for your future destination website) and indicate the parameter of the component in the "DB Destination (slave)," data connection (Base data, Host, User name, password, prefix).</li>
+	<li> Also indicate paramettre connection to your database, so the name of the Database, Host (localhost or SQL server name), Login (root) and password (SQL Server), and the prefix of tables (eg odlug_) in the "Source DB (master)".</li>
+	<li> Then you need to configure exceptions for replication of database on the "Exclusions / Recovery of table". there are four possibilities of action for each table:
+		<ol>
+			<li>"Replicate"
+				<ol>
+					<li>this action is the standard</li>
+					<li> it is a unidirectional replication of the website <strong>source</strong> to the <strong>destination</strong> website</strong></li>
+				</ol>
+			</li>
+			<li>"Repatriating before replicating"
+				<ol>
+					<li>             This action will retrieve the data from the table the website of explotation to import it into the website "source" BEFORE exporting them,</li>
+					<li> it is a bidirectional replication destination website to the website <strong>source</strong> and then to the <strong>destination</strong> website.						</li>
+					<li><strong>Warning</strong>: This type of recovery will ecrasser table data source and thus changes the source website.						</li>
+					<li>The most frequent use of this action is for tables of content like the comment, user account, change forum on the web site operating.</li>
+				</ol>
+			</li>
+			<li>"Do not replicate"
+				<ol>
+					<li>This action excluded from replication a table such as table "session"</li>
+				</ol>
+			</li>
+			<li>"Do not save"
+				<ol>
+					<li>Do not save the backup (beta)</li>
+				</ol>
+			</li>
+		</ol>
+	</li>
+	<li>Then you <strong>save the parameters</strong></strong></li>
+	<li><strong>The configuration is finished</strong> and you can replicate. then recheck 2 times..<br />
+		<strong>     Save before you replicate your database and files</strong><br />
+	</li>
+</ol>
+</body>
+</html>
