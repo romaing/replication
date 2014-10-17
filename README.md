@@ -19,3 +19,6 @@ Le paramettage est simple :
 
 
 ATTENTION : s’il vous plaît, avant d'utiliser le composant, veuillez sauvegarder toutes les données (structure, fichiers, base de donnée), une erreur de configutaion vite arrivé et il n'y aura pas de deuxième essai ;).
+
+
+http://composant.gires.net/
