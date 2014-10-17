@@ -1,58 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<install type="component" version="2.5.0" method="upgrade">
-    <name>Replication</name>
-    <creationDate>mai 2012</creationDate>
-    <author>Romain Gires</author>
+<extension type="component" version="3.0" method="upgrade">
+	<name>com_replication</name>
+	<author>Romain Gires</author>
+	<creationDate>Mars 2013</creationDate>
+    <copyright>Copyright (C) 2007 - 2013 romain gires. All rights reserved.</copyright>
+    <license>This component is released under the GNU/GPL License or later; http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <authorEmail>composant@gires.net</authorEmail>
     <authorUrl>http://composant.gires.net</authorUrl>
-    <copyright>This component is released under the GNU/GPL License. Copyright (C) 2007 - 2013 romain gires. All rights reserved.</copyright>
-    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <version>2.5.2.5.RC5</version>
-    <description>COM_REPLICATION_DESCRIPTION</description>
+	<version>3.0.0</version>
+	<description>COM_REPLICATION_DESCRIPTION</description>
+	<!--
+		http://docs.joomla.org/Manifest_files
+	-->
 
-	<!-- Runs on install/uninstall/update; New in 1.6 -->
 	<scriptfile>script.php</scriptfile>
-
-	<install> <!-- Runs on install -->
+	<install> 
 		<sql>
 			<file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
 		</sql>
 	</install>
-	<uninstall> <!-- Runs on uninstall -->
+	<uninstall> 
 		<sql>
 			<file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
 		</sql>
 	</uninstall>
-	<update> <!-- Runs on update; New in 1.6 -->
-		<schemas>
-			<schemapath type="mysql">sql/updates/mysql</schemapath>
-		</schemas>
-	</update>
-	<media destination="com_replication" folder="media">
-		<filename>index.html</filename>
-		<folder>images</folder>
-	</media>
+
 	<administration>
-		<languages folder="language">
-			<language tag="en-GB">en-GB.com_replication.ini</language>
-			<language tag="en-GB">en-GB.com_replication.sys.ini</language>
-			<language tag="fr-FR">fr-FR.com_replication.ini</language>
-			<language tag="fr-FR">fr-FR.com_replication.sys.ini</language>
-		</languages>
-		
-		<!-- Administration Menu Section -->
-			<!--
-				Note that all & must be escaped to &amp; for the file to be valid
-				XML and be parsed by the installer
-			-->
-		<menu img="../media/com_replication/images/replication-16x16.png">COM_REPLICATION_MENU</menu>
-		<files folder="back">
+		<menu link="option=com_replication" img="administration/components/com_replication/assets/images/replication-16x16.png">COM_REPLICATION_MENU</menu>
+		<submenu>
+			<menu link="option=com_replication" 
+				img="administration/components/com_replication/assets/images/replication-16x16.png"
+				alt="replication/Settings">COM_REPLICATION_MENU_SITE</menu>
+			<menu link="option=com_replication" 
+				img="administration/components/com_replication/assets/images/replication-16x16.png"
+				alt="replication/Settings">COM_REPLICATION_MENU_BDD</menu>
+			<menu link="option=com_config&amp;view=component&amp;component=com_replication" 
+				img="administration/components/com_replication/assets/images/icon-16-config.png" 
+				alt="replication/Settings">COM_REPLICATION_MENU_SETTINGS</menu>
+		</submenu>
+		<files folder="admin">
 			<filename>config.xml</filename>
 			<filename>access.xml</filename>
 			<filename>controller.php</filename>
 			<filename>index.html</filename>
 			<filename>licence.html</filename>
 			<filename>replication.php</filename>
+			<folder>assets</folder>
 			<folder>controllers</folder>
 			<folder>help</folder>
 			<folder>helpers</folder>
@@ -61,6 +54,22 @@
 			<folder>tables</folder>
 			<folder>views</folder>
 		</files>
+		<languages >
+			<language tag="en-GB">languages/en-GB.com_replication.ini</language>
+			<language tag="en-GB">languages/en-GB.com_replication.sys.ini</language>
+			<language tag="fr-FR">languages/fr-FR.com_replication.ini</language>
+			<language tag="fr-FR">languages/fr-FR.com_replication.sys.ini</language>
+		</languages>
 	</administration>
-</install>
+	<update> 
+		<schemas>
+			<schemapath type="mysql">sql/updates/mysql</schemapath>
+		</schemas>
+	</update>
+	<updateservers>
+		<server type="extension" priority="1" name="Replication's Updates">http://update.composant.gires.net/extension.xml</server>
+	</updateservers>
+
+</extension>
+
 

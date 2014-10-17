@@ -1,9 +1,9 @@
 <?php
 /**
- * @version 2.5
+ * @version 3.0
  * @subpackage Components
  * @package replication
- * @copyright Copyright (C) 2007 - 2012 romain gires. All rights reserved.
+ * @copyright Copyright (C) 2007 - 2013 romain gires. All rights reserved.
  * @author		romain gires
  * @link		http://composant.gires.net/
  * @license		License GNU General Public License version 2 or later
