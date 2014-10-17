@@ -1,7 +1,8 @@
-replication 2.5.2.5.rc5 pour version joomla 1.5, 1.7 et 2.5
+replication 2.5.2.5.rc5
 ===========
-
-  com_replication est un compossant joomla de replication de site et de base de donnée
+pour version joomla 1.5, 1.7 et 2.5
+ 
+com_replication est un compossant joomla de replication de site et de base de donnée
 
 "Réplication" est le seul composant Joomla (à ce jour) qui permet répliquer le site Web (fichiers, répertoires) et/ou base de donnée.
 
