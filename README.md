@@ -1,3 +1,5 @@
+<img src="logo_replication.png">
+
 replication
 ===========
 
