@@ -1,7 +1,9 @@
 <img src="logo_replication.png">
 
-replication
+replication 3.0.0.0.b1
 ===========
+pour version joomla 1.7, 2.5 et 3.x
+-----------
 
   com_replication est un compossant joomla de replication de site et de base de donnée
 
