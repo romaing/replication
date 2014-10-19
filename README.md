@@ -27,12 +27,12 @@ ATTENTION : s’il vous plaît, avant d'utiliser le composant, veuillez sauvegar
 
 http://composant.gires.net/
 
-Version for joomla 1.7, 2.5 and 3.x
+For joomla 1.7, 2.5 and 3.x
 -----------
 
 The com_replication extension for Joomla! will replicate your site's files and database.
 
-"Replication" was the first Joomla extension to replicated the entire Joomla! website (files, directories) and / or database to or from another site.
+"Replication" was the first Joomla extension to allow you to copy your entire Joomla! website (files, directories) and / or database to or from another site.
 
 It can be used to copy a pre-production environment to or from a production environment on the same or separate servers, and on dedicated or shared servers inc. commercial hosting environments.
 
