@@ -1,4 +1,4 @@
-<img src="logo_replication.png">
+<img src="/admin/assets/images/replication-110x110.png">
 
 replication 3.0.0.0.b1
 ===========
