@@ -118,7 +118,7 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 					   </tr>
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_LICENSE'); ?></th>
-						  <td><a target="_blank" href="/administrator/components/com_replication/licence.html"><?php echo JText::_('COM_REPLICATION_SITE_COMBINED_LICENSE'); ?></a></td>
+						  <td><a target="_blank" href="<?php echo JURI::root(true); ?>/administrator/components/com_replication/licence.html"><?php echo JText::_('COM_REPLICATION_SITE_COMBINED_LICENSE'); ?></a></td>
 					   </tr>
 					   <tr>
 						  <th valign="top"><?php echo JText::_('COM_REPLICATION_SITE_PROMODESCRIPTION'); ?>
