@@ -26,7 +26,7 @@ $iFrame =  '<div id="element-box" style="height:260px;" ><div class="m" style="h
 			}
 		}
 		var openHelp = true;
-		
+
 		function displayDoc(){
 			var box=$('iframedoc');
 			if(openHelp){
@@ -77,21 +77,21 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 						<span><?php echo JText::_('COM_REPLICATION_PANEL_TITRE_COMPOSANT_REPLICATION'); ?></span>
 					</a>
 				</h3>
-				<div class="pane-slider content pane-down" style="padding-top: 0px; border-top: medium none; padding-bottom: 0px; border-bottom: medium none; overflow: hidden; height: auto;">	
+				<div class="pane-slider content pane-down" style="padding-top: 0px; border-top: medium none; padding-bottom: 0px; border-bottom: medium none; overflow: hidden; height: auto;">
 					<table class="adminlist">
 					   <tbody>
 					   <tr>
 							<th>
 							</th><td>
 								<a target="_blank" href="http://composant.gires.net">
-									<img align="middle" style="border: none; margin: 8px;" alt="Composant Replication logo" src="http://composant.gires.net/media/com_replication/images/replication-120x120.png" width="120" height="120" />
+									<img align="middle" style="border: none; margin: 8px;" alt="Replication logo" src="<?php echo JURI::root(true); ?>/administrator/components/com_replication/assets/images/replication-120x120.png" width="120" height="120" />
 								</a>
 							</td>
 						</tr>
 					   <tr>
 						  <th width="120">
 						  </th><td><?php echo JText::_('COM_REPLICATION_SITE_LIEN'); ?></td>
-					   </tr>	
+					   </tr>
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_VERSION'); ?></th>
 						  <td><?php echo JText::_('COM_REPLICATION_SITE_NUMVERSION'); ?></td>
@@ -100,8 +100,8 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 						  <th>Newest version:
 						  </th><td>4.2.4 <input type="button" value="Disable version checker" onclick="disableStatus('versioncheck');"></td>
 					   </tr -->
-						
-						
+
+
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_DATE'); ?></th>
 						  <td><?php echo JText::_('COM_REPLICATION_SITE_JOURDATE'); ?></td>
@@ -110,7 +110,7 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 						  <th valign="top"><?php echo JText::_('COM_REPLICATION_SITE_COPYRIGHT'); ?></th>
 						  <td>&copy; <?php echo JText::_('COM_REPLICATION_SITE_COPYRIGHTC'); ?></td>
 					   </tr>
-					   
+
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_AUTHOR'); ?>
 						  </th><td><?php echo JText::_('COM_REPLICATION_SITE_LIEN'); ?>,
@@ -118,7 +118,7 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 					   </tr>
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_LICENSE'); ?></th>
-						  <td><a target="_blank" href="/administrator/components/com_replication/licence.html"><?php echo JText::_('COM_REPLICATION_SITE_COMBINED_LICENSE'); ?></a></td>
+						  <td><a target="_blank" href="<?php echo JURI::root(true); ?>/administrator/components/com_replication/licence.html"><?php echo JText::_('COM_REPLICATION_SITE_COMBINED_LICENSE'); ?></a></td>
 					   </tr>
 					   <tr>
 						  <th valign="top"><?php echo JText::_('COM_REPLICATION_SITE_PROMODESCRIPTION'); ?>
@@ -132,21 +132,21 @@ action="<?php echo JRoute::_('index.php?option=com_replication'); ?>">
 					   <tr>
 						  <th><?php echo JText::_('COM_REPLICATION_SITE_SUPPORT'); ?>
 						  </th><td>
-						
-						  
+
+
 						  <form method="post" action="https://www.paypal.com/cgi-bin/webscr">
 						  <input type="hidden" value="_s-xclick" name="cmd">
 						  <input type="hidden" value="8159768" name="hosted_button_id">
 						  <input type="image" border="0" alt="<?php echo JText::_('COM_REPLICATION_SITE_PAYPALIMG'); ?>" name="submit" mce_src="https://www.paypal.com/fr_FR/FR/i/btn/btn_donateCC_LG.gif" src="https://www.paypal.com/fr_FR/FR/i/btn/btn_donateCC_LG.gif">
 						  <img width="1" height="1" border="0" mce_src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" alt="" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif">
 						  </form>
-				
-				
+
+
 						  </td>
 						</tr>
 						</tbody>
 					</table>
-				
+
 				</div>
 			</div>
 		</div>
