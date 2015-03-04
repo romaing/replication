@@ -200,6 +200,7 @@ class replicationViewreplication_site extends JViewLegacy
 		//$rs_inclusion 		= $Component_admin_path.$config->get('rs_inclusion', '');
 		$rs_option  		= $config->get('rs_option', '');
 		$rs_userssh 		= $config->get('rs_userssh', 'login@serveur.principal.fr');
+		$rs_passssh 		= $config->get('rs_passssh', 'xxx');
 
 		
 		//windows
@@ -224,7 +225,7 @@ class replicationViewreplication_site extends JViewLegacy
 		### SSH
 		$ssh_dest = "";
 		if ($config->get('rs_ssh', '0')){
-			$ssh_dest .= "-e ssh $rs_userssh:";	
+			$ssh_dest .= "-e 'ssh p $rs_passssh' $rs_userssh:";	
 		}
 
 

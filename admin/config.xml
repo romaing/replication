@@ -286,6 +286,15 @@ installation;
 			description="COM_REPLICATION_XML_USERSSH_DESC"
 		/>
 
+		<field
+			name="rs_passssh"
+			type="text"
+			default="xxx"
+			size="40"
+			label="COM_REPLICATION_XML_PASSSSH_LABEL"
+			description="COM_REPLICATION_XML_PASSSSH_DESC"
+		/>
+
 		
 	</fieldset>
     
