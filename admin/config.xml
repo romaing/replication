@@ -287,9 +287,18 @@ installation;
 		/>
 
 		<field
-			name="rs_passssh"
+			name="rs_portssh"
 			type="text"
-			default="xxx"
+			default="22"
+			size="40"
+			label="COM_REPLICATION_XML_PORTSSH_LABEL"
+			description="COM_REPLICATION_XML_PORTSSH_DESC"
+		/>
+
+		<field
+			name="rs_filepassssh"
+			type="text"
+			default="~/votre_login/.ssh/id_dsa.pub"
 			size="40"
 			label="COM_REPLICATION_XML_PASSSSH_LABEL"
 			description="COM_REPLICATION_XML_PASSSSH_DESC"

@@ -680,7 +680,7 @@ class ReplicationHelper
 	 * transforme les Path windows d:\wwwroot\joomla\
 	 * en path /cygdrive/d/wwwroot/joomla/
 	 */
-	public function cygdrive_path(& $path) {
+	public static function cygdrive_path(& $path) {
 		//si le 2eme caratere est :, je considere que l'on est sur window
 		if (substr($path,1,2) == ':'.DS ){
 			// on passe tous les antislash en slash 
