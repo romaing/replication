@@ -26,7 +26,7 @@ class ReplicationController extends JControllerLegacy
 	 *
 	 * @return void
 	 */
-	function display($cachable = false) 
+	public function display($cachable = false, $urlparams = array())
 	{
 		require_once JPATH_COMPONENT.'/helpers/replication.php';
 

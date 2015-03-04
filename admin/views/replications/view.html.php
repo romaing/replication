@@ -34,7 +34,7 @@ class ReplicationViewReplications extends JViewLegacy
 			);*/
 
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', './backups/');  
 		$namelog = $config->get( 'namelog', 'replication.log');  
 

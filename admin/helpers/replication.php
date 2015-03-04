@@ -13,17 +13,18 @@
 defined('_JEXEC') or die;
 if(!defined('DS')){ define('DS',DIRECTORY_SEPARATOR);}
 if(!defined('POINTDS')){ define('POINTDS',".".DIRECTORY_SEPARATOR);}
-if(!defined('POINTDS')){ define('BACKUPDS','.'.DIRECTORY_SEPARATOR.'backups'.DIRECTORY_SEPARATOR);}
+if(!defined('BACKUPDS')){ define('BACKUPDS','.'.DIRECTORY_SEPARATOR.'backups'.DIRECTORY_SEPARATOR);}
 
 
 
 /**
  * Replication component helper.
  */
-abstract class ReplicationHelper
+class ReplicationHelper
 {
 	
 	protected $path_backups;
+	public static $extension = 'com_replication';
 
 
 	/**
@@ -122,7 +123,7 @@ abstract class ReplicationHelper
 		return  (array_key_exists($table, $filtre)) ? $filtre[$table]: 1;
 	}
 
-	public function getTableListe(&$db) 
+	public static function getTableListe(&$db) 
 	{
 		$rows = array();
 
@@ -137,7 +138,7 @@ abstract class ReplicationHelper
 		}
 
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$dbprefix = $config->get( 'prefix_source', 'jom_');  
 		
 		$prefixstrlen = strlen($dbprefix);
@@ -151,7 +152,7 @@ abstract class ReplicationHelper
 				$rows[$i]=  $val;
 			}
 		}
-		return $this->rows = $rows;
+		return $rows = $rows;
 	}
 	
 	/**
@@ -172,7 +173,7 @@ abstract class ReplicationHelper
 		$db->setQuery( $query );
 		$db->query();
 		*/
-echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
+
 		if ($count == 0) {
 			//JError::raiseNotice( '', JText::_('COM_REPLICATION_SAUVEGARDER_EXCLUSION')  );
 			//$db = JFactory::getDBO();
@@ -423,7 +424,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		}
 		return $creations.$insertions;
 	}
-	public function vieuxfichier($chemin , $nombrearchive = 5, $name_ereg = "^dump"){
+	public static  function vieuxfichier($chemin , $nombrearchive = 5, $name_ereg = '/^dump/'){
 		$num = 0;
 		$list = "";
 		$url=JURI::root().'administrator'.substr(str_replace('\\', DS, $chemin),1);
@@ -432,7 +433,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 			$dh = opendir($chemin);
 			$listeentry=array();
 			while (false !== ($entry =readdir($dh)) ) {
-				if(ereg($name_ereg, $entry)){
+				if(preg_match($name_ereg, $entry)){
 					$num++ ;
 					$listeentry[] = $entry;
 				}
@@ -451,7 +452,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		}
 		return $list;
 	}
-	public function read_replic( $path=POINTDS, $name){
+	public static function read_replic( $path=POINTDS, $name){
 		
 		//si dossier backups n'existe pas, on le creer
 		ReplicationHelper::creer_dossier( $path);
@@ -475,7 +476,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		fclose($fp);
 	}
 	public function write_config_dest(){
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 
 		$data['host'] 		= $config->get( 'host_destination', '');      
 		$data['user'] 		= $config->get( 'login_destination', '');     
@@ -541,7 +542,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		return true;
 	}
 	public function write_exclude(){
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$rs_exclusion = $config->get( 'rs_exclusion', 'exclusion.txt');  
 		$Component_admin_path 	= JPATH_COMPONENT_ADMINISTRATOR.DS;
 		$exclusion = $config->get( 'exclusion', 'configuration.php');
@@ -559,7 +560,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 	}
 
 	public function clearlog(){
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$rs_logfile = $config->get( 'rs_logfile', BACKUPDS.'rsync-log.txt');  
 		$Component_admin_path 	= JPATH_ADMINISTRATOR.DS;
 
@@ -572,16 +573,16 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 	}
 		
  	public function creer_dossier_backups(){
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
 		ReplicationHelper::creer_dossier( $pathbackups );
 	}
  	public function creer_dossier_destination(){
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathdestination = $config->get( 'url_destination', '');
 		ReplicationHelper::creer_dossier( $pathdestination.DS );
 	}
- 	private function creer_dossier( $path){
+ 	private static function creer_dossier( $path){
 		if(!is_dir($path)) {
 			//creer le dossoer backups
 			mkdir($path, 0755, true);
@@ -694,8 +695,8 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 			$path = '"'.$path.'"';
 		}
 	}
-	public function recherche_fichierrsync() {
-		$config = &JComponentHelper::getParams( 'com_replication' );
+	public static  function recherche_fichierrsync() {
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
 
 		### affiche les fichiers si je suis admin
@@ -704,12 +705,12 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		if ($canDo->get('core.admin')) {
 			//retourne la liste des anciennes sauvegardes
 			$archive .=  "<b>".JText::_('COM_REPLICATION_DERNIERE_MISE_A_JOUR_SITE')."</b><br>";
-			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^rsync");
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,'/^rsync/');
 		}
 		return $archive;
 	}
-	public function recherche_dumps() {
-		$config = &JComponentHelper::getParams( 'com_replication' );
+	public static  function recherche_dumps() {
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
 
 		### affiche les fichiers si je suis admin
@@ -718,11 +719,11 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		if ($canDo->get('core.admin')) {
 			//retourne la liste des anciennes sauvegardes
 			$archive .=  "<b>".JText::_('COM_REPLICATION_DERNIERE_MISE_A_JOUR')."</b><br>";
-			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^source");
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,'/^source/');
 			$archive .=   "<hr><b>".JText::_('COM_REPLICATION_TABLE_RECUPERER_POUR_MISE_A_JOUR_DE_LA_SOURCE')."</b><br>";
-			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^recup");
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,'/^recup/');
 			$archive .=   "<hr><b>".JText::_('COM_REPLICATION_BACKUP_AVANT_MISE_A_JOUR_DE_LA_BASE_DESTINATION')."</b><br>";
-			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,"^desti");
+			$archive .= ReplicationHelper::vieuxfichier($pathbackups,5,'/^desti/');
 		}
 		return $archive;
 	}
@@ -737,7 +738,7 @@ echo __FILE__, " (",__LINE__,") ","<pre>", print_r($count,1),"</pre>";
 		$Component_admin_path 	= JPATH_COMPONENT_ADMINISTRATOR.DS;
 
 		### param settings
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$url_destination = $config->get('url_destination');
 
 		if( empty($url_destination) ){

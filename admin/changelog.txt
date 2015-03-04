@@ -1,0 +1,11 @@
+2015.03.03
+Modification des ereg pour compatibilité php 5.4.19
+
+2015.03.03
+Test Joomla 3.4
+
+2015.03.02
+Modification des ereg pour compatibilité php 5.3.27
+
+2014.10.17
+Mise à jour langue EN

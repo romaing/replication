@@ -14,7 +14,7 @@ defined('_JEXEC') or die;
 // Include the component HTML helpers.
 JHtml::_('behavior.tooltip');
 
-$lang =& JFactory::getLanguage();
+$lang = JFactory::getLanguage();
 $langTag = $lang->getTag();
 ?>
 

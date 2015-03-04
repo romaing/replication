@@ -17,8 +17,8 @@ jimport('joomla.application.component.view');
  * Statistics view class for Finder.
  *
  * @package     Joomla.Administrator
- * @subpackage  com_finder
- * @since       2.5
+ * @subpackage  com_replication
+ * @since       3.x
  */
 //class replicationViewreplication_site extends JView
 class replicationViewreplication_site extends JViewLegacy
@@ -43,7 +43,7 @@ class replicationViewreplication_site extends JViewLegacy
 		$this->msg = "";
 			
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 
 		$this->path_source = $config->get( 'url_source', '');
 		$this->path_dest = $config->get( 'url_destination', '');
@@ -85,7 +85,7 @@ class replicationViewreplication_site extends JViewLegacy
 								);
 			
 		}
-		
+
 		$this->fichierrsync = ReplicationHelper::recherche_fichierrsync();
 		
 		
@@ -175,7 +175,7 @@ class replicationViewreplication_site extends JViewLegacy
 		jimport( 'joomla.application.component.helper' );
 		//$config	= JComponentHelper::getParams( 'com_replication' );
 		
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 
 		### param site			
 			

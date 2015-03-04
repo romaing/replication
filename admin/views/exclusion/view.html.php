@@ -41,7 +41,7 @@ class ReplicationViewExclusion extends JViewLegacy
 		$mainframe = JFactory::getApplication();
 		$dbprefix = $mainframe->getCfg('dbprefix');
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$prefix_source = $config->get( 'prefix_source', 'jom_');
 		
 		if ( $dbprefix != $prefix_source ){

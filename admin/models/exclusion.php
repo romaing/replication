@@ -61,7 +61,7 @@ class ReplicationModelExclusion extends JModelList
 		$dbprefix = $mainframe->getCfg('dbprefix');
 		*/
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 		$dbprefix = $config->get( 'prefix_source', 'jom_');  
 		
 		$prefixstrlen = strlen($dbprefix);
@@ -78,7 +78,7 @@ class ReplicationModelExclusion extends JModelList
 		return $this->rows = $rows;
 	}
 	
-	function getStatuslevel( &$row )
+	public static function getStatuslevel( &$row )
 	{
 		$db = JFactory::getDBO();
 		$query = 'SELECT id AS value, name AS text'

@@ -26,7 +26,7 @@ class replicationViewreplication_bdd extends JViewLegacy
 		$this->msg = "";
 
 		//config param composant
-		$config = &JComponentHelper::getParams( 'com_replication' );
+		$config = JComponentHelper::getParams( 'com_replication' );
 
 		$this->base_source = $config->get( 'base_source', '');
 		$this->base_dest = $config->get( 'base_destination', '');
