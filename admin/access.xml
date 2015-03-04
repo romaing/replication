@@ -4,8 +4,8 @@
 	<section name="component">
 		<action name="core.admin" title="JACTION_ADMIN" description="JACTION_ADMIN_COMPONENT_DESC" />
 		<action name="core.manage" title="JACTION_MANAGE" description="JACTION_MANAGE_COMPONENT_DESC" />
-		<action name="replication.apply_bdd" title="REPLICATION_JACTION_BDD" description="JACTION_CREATE_COMPONENT_DESC" />
-		<action name="replication.apply_site" title="REPLICATION_JACTION_SITE" description="JACTION_CREATE_COMPONENT_DESC" />
+		<action name="replication.apply_bdd" title="REPLICATION_JACTION_BDD" description="REPLICATION_JACTION_BDD_COMPONENT_DESC" />
+		<action name="replication.apply_site" title="REPLICATION_JACTION_SITE" description="REPLICATION_JACTION_SITE_COMPONENT_DESC" />
 					
 		<!--
 		<action name="core.create" title="JACTION_CREATE" description="JACTION_CREATE_COMPONENT_DESC" />
