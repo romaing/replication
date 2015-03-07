@@ -541,7 +541,7 @@ class ReplicationHelper
 		}		
 		return true;
 	}
-	public function write_exclude(){
+	public static function write_exclude(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$rs_exclusion = $config->get( 'rs_exclusion', 'exclusion.txt');  
 		$Component_admin_path 	= JPATH_COMPONENT_ADMINISTRATOR.DS;
@@ -559,7 +559,7 @@ class ReplicationHelper
 		return false;
 	}
 
-	public function clearlog(){
+	public static function clearlog(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$rs_logfile = $config->get( 'rs_logfile', BACKUPDS.'rsync-log.txt');  
 		$Component_admin_path 	= JPATH_ADMINISTRATOR.DS;
@@ -572,12 +572,12 @@ class ReplicationHelper
 		return false;
 	}
 		
- 	public function creer_dossier_backups(){
+ 	public static function creer_dossier_backups(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
 		ReplicationHelper::creer_dossier( $pathbackups );
 	}
- 	public function creer_dossier_destination(){
+ 	public static function creer_dossier_destination(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathdestination = $config->get( 'url_destination', '');
 		ReplicationHelper::creer_dossier( $pathdestination.DS );
