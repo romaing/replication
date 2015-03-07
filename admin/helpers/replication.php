@@ -558,7 +558,6 @@ class ReplicationHelper
 		}
 		return false;
 	}
-
 	public static function clearlog(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$rs_logfile = $config->get( 'rs_logfile', BACKUPDS.'rsync-log.txt');  
@@ -571,7 +570,6 @@ class ReplicationHelper
 		}
 		return false;
 	}
-		
  	public static function creer_dossier_backups(){
 		$config = JComponentHelper::getParams( 'com_replication' );
 		$pathbackups = $config->get( 'pathbackups', BACKUPDS);
