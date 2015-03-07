@@ -273,12 +273,10 @@ class replicationViewreplication_site extends JViewLegacy
 			$command  = "rsync " ;
 			$command .= "$rs_option " ;
 			$command .= "$options " ;
-			//$command .= "--exclude-from $rs_exclusion " ;
+			$command .= "--exclude-from $rs_exclusion " ;
 			$command .= "$url_source " ;
 			$command .= "$ssh_dest$url_destination" ;
 			
-			
-			//$command  = 'rsync -az --verbose  --delete   "/cygdrive/D/romain/2012/wwwroot/test" "/cygdrive/C/test2"  ' ; 
 			//$command  = 'rsync --help ' ; 
 			ob_start();
 				//Protège les caractères spéciaux du Shell
